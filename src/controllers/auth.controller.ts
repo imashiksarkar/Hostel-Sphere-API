@@ -9,12 +9,6 @@ import { ReqWithUser } from '../middlewares/requireAuth'
 class AuthController {
   constructor(private authService: IAuthService) {}
 
-  login = catchAsync((_req: Request, res: Response) => {
-    res.status(200).json({
-      message: 'Welcome to the Hostel Sphere API 🚀',
-    })
-  })
-
   register = catchAsync(async (req: ReqWithUser, res: Response) => {
     const { success, data, error } = createUserDto.safeParse(req.locals.user)
 
@@ -24,8 +18,18 @@ class AuthController {
     const user = await this.authService.createUser(data)
 
     res.status(201).json({
-      status: 'success',
+      success: true,
+      status: 'CREATED',
       data: user,
+    })
+  })
+
+  listUsers = catchAsync(async (_req: Request, res: Response) => {
+    const users = await this.authService.listUsers()
+    res.status(200).json({
+      success: true,
+      status: 'OK',
+      data: users,
     })
   })
 }
