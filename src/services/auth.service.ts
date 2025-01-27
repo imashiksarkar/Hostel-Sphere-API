@@ -20,8 +20,10 @@ export default class AuthService implements IAuthService {
     return await user.save()
   }
 
-  listUsers = async () => {
-    const users = await User.find()
+  listUsers = async (searchText?: string) => {
+    const search = searchText ? { $text: { $search: searchText } } : {}
+
+    const users = await User.find(search)
     return users
   }
 }

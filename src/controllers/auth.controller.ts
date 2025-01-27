@@ -24,8 +24,10 @@ class AuthController {
     })
   })
 
-  listUsers = catchAsync(async (_req: Request, res: Response) => {
-    const users = await this.authService.listUsers()
+  listUsers = catchAsync(async (req: Request, res: Response) => {
+    const searchText = ((req.query.search || '') as string).trim()
+
+    const users = await this.authService.listUsers(searchText)
     res.status(200).json({
       success: true,
       status: 'OK',
