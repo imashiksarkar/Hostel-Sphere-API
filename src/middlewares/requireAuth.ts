@@ -34,13 +34,13 @@ const requireAuth = (passThrough = false) =>
       const user = {} as IUser
       let error = null
       try {
-        const { uid, name, email, picture } = await verifyIdToken(token)
+        const { uid, name, email, picture, role } = await verifyIdToken(token)
 
         user.fbId = uid
         user.name = name
         user.email = email
         user.image = picture
-        user.role = user.role || 'user'
+        user.role = role || 'user'
 
         if (!name) {
           const userRecord = await admin.auth().getUser(uid)
@@ -54,8 +54,6 @@ const requireAuth = (passThrough = false) =>
       req.locals = {
         user,
       }
-
-      console.log(user)
 
       if (error && passThrough) return next()
       else if (error)

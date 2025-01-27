@@ -35,6 +35,18 @@ class AuthController {
       data: users,
     })
   })
+
+  changeUserRole = catchAsync(async (req: Request, res: Response) => {
+    const { userId, role } = req.body
+
+    const user = await this.authService.changeUserRole(userId, role)
+
+    res.status(200).json({
+      success: true,
+      status: 'OK',
+      data: user,
+    })
+  })
 }
 
 const authService = new AuthService()

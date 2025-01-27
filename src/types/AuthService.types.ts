@@ -6,4 +6,5 @@ export default interface IAuthService {
     searchText?: string,
     skip?: number
   ) => Promise<{ totalDocs: number; users: IUser[] }>
+  changeUserRole: (userId: string, role: 'admin' | 'user') => Promise<IUser>
 }

@@ -28,4 +28,18 @@ export default class AuthService implements IAuthService {
 
     return { totalDocs, users }
   }
+
+  changeUserRole = async (userId: string, role: 'admin' | 'user') => {
+    const user = await User.findById(userId)
+    if (!user) throw Err.setStatus('NotFound').setMessage('User not found')
+
+    user.role = role
+
+    await setCustomUserClaims(user.fbId, {
+      role,
+      userId: user._id,
+    })
+
+    return await user.save()
+  }
 }
