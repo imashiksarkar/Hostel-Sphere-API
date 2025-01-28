@@ -7,5 +7,6 @@ const mealRouter = Router()
 mealRouter.get('/', mealController.fetchMeals)
 mealRouter.post('/', requireAuth(), mealController.createMeal)
 mealRouter.post('/request', requireAuth(), mealReqController.createMealReq)
+mealRouter.patch('/request/:mealReqId', requireAuth(), mealReqController.updateMealReq)
 
 export default mealRouter

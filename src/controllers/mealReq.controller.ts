@@ -32,6 +32,35 @@ class MealReqController {
       data: meal,
     })
   })
+
+  updateMealReq = catchAsync(async (req: ReqWithUser, res: Response) => {
+    const { mealReqId } = req.params
+    const { status } = req.body
+
+    const userId = req.locals.user._id
+    const role = req.locals.user.role as 'admin' | 'user'
+
+    const actionForRole = {
+      admin: ['delivered', 'canceled'],
+      user: ['canceled'],
+    }
+
+    if (!actionForRole[role].includes(status))
+      throw Err.setStatus('Forbidden').setMessage('Action not allowed')
+
+    const meal = await this.mealReqService.updateStatus(
+      userId,
+      role,
+      mealReqId,
+      status
+    )
+
+    res.status(200).json({
+      success: true,
+      status: Http.setStatus('Ok').status,
+      data: meal,
+    })
+  })
 }
 
 const mealReqController = new MealReqController(new MealReqService())

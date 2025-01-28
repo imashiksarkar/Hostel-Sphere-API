@@ -21,9 +21,12 @@ export default IMeal
 
 export type ICreateMealRequestDto = z.infer<typeof createMealReqDto>
 
+
+export type MealReqStatus= (typeof mealReqStatuses)[number]
+
 export interface IMealRequest extends ICreateMealRequestDto {
   _id: string
-  status: (typeof mealReqStatuses)[number] // default is 'pending'
+  status: MealReqStatus // default is 'pending'
   createdAt: Date
   updatedAt: Date
 }
