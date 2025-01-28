@@ -33,6 +33,23 @@ class MealReqController {
     })
   })
 
+  fetchMealReqs = catchAsync(
+    async (req: ReqWithUser<'passThrough'>, res: Response) => {
+      const userId = req.locals.user?._id
+      const role = req.locals.user?.role as 'admin' | 'user' | undefined
+
+      const mealReqs = await this.mealReqService.find(
+        role === 'admin' ? undefined : userId
+      )
+
+      res.status(200).json({
+        success: true,
+        status: Http.setStatus('Ok').status,
+        data: mealReqs,
+      })
+    }
+  )
+
   updateMealReq = catchAsync(async (req: ReqWithUser, res: Response) => {
     const { mealReqId } = req.params
     const { status } = req.body

@@ -6,6 +6,7 @@ import {
 
 export default interface IMealReqService {
   create: (meal: ICreateMealRequestDto) => Promise<IMealRequest>
+  find: (userId?: string) => Promise<IMealRequest[]> // return all meal requests if the user id is not provided
   updateStatus: (
     userId: string,
     userRole: 'admin' | 'user',
