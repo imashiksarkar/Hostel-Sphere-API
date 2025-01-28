@@ -10,6 +10,8 @@ type IMeal = Omit<CreateMealDto, 'status'> & {
   _id: string
   status: (typeof mealStatuses)[number] // default is 'available'
   rating: number // default is 0
+  likes: number // aggregate
+  reviews: number // aggregate
   createdAt: Date
   updatedAt: Date
 }
