@@ -1,6 +1,7 @@
 import z from 'zod'
-import { createMealDto } from '../dtos/meal.dto'
+import { createMealDto, createMealReqDto } from '../dtos/meal.dto'
 import mealStatuses from '../constants/mealStatuses'
+import mealReqStatuses from '../constants/mealReqStatuses'
 
 export type CreateMealDto = z.infer<typeof createMealDto> & {
   distributor: string
@@ -17,3 +18,12 @@ type IMeal = Omit<CreateMealDto, 'status'> & {
 }
 
 export default IMeal
+
+export type ICreateMealRequestDto = z.infer<typeof createMealReqDto>
+
+export interface IMealRequest extends ICreateMealRequestDto {
+  _id: string
+  status: (typeof mealReqStatuses)[number] // default is 'pending'
+  createdAt: Date
+  updatedAt: Date
+}
