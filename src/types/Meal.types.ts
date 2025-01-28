@@ -6,7 +6,7 @@ export type CreateMealDto = z.infer<typeof createMealDto> & {
   distributor: string
 }
 
-type IMeal = CreateMealDto & {
+type IMeal = Omit<CreateMealDto, 'status'> & {
   _id: string
   status: (typeof mealStatuses)[number] // default is 'available'
   rating: number // default is 0

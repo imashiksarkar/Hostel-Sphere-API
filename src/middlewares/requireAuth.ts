@@ -5,6 +5,7 @@ import { verifyIdToken } from '../services/firebase.service'
 import admin from 'firebase-admin'
 
 export interface IUser {
+  _id: string
   fbId: string
   name: string
   email?: string
@@ -34,13 +35,16 @@ const requireAuth = (passThrough = false) =>
       const user = {} as IUser
       let error = null
       try {
-        const { uid, name, email, picture, role } = await verifyIdToken(token)
+        const { uid, name, email, picture, role, userId } = await verifyIdToken(
+          token
+        )
 
         user.fbId = uid
         user.name = name
         user.email = email
         user.image = picture
         user.role = role || 'user'
+        user._id = userId
 
         if (!name) {
           const userRecord = await admin.auth().getUser(uid)
