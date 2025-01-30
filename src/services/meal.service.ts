@@ -1,3 +1,4 @@
+import { Err } from 'http-staror'
 import Meal from '../models/Meal.model'
 import IMeal, { CreateMealDto } from '../types/Meal.types'
 import IMealService from '../types/MealService.types'
@@ -9,19 +10,26 @@ export default class MealService implements IMealService {
   }
 
   fetchMeals = async (
-    sortFilter?: string,
+    category?: string,
+    sort?: string,
     skip: number = 0,
     limit: number = 10
   ) => {
-    const fltr: { [key: string]: 1 | -1 } = sortFilter?.startsWith('-')
-      ? { [sortFilter.slice(1)]: -1 }
-      : { [sortFilter as string]: 1 }
-
-    const totalDocs = await Meal.find().countDocuments()
+    const fltr: { [key: string]: 1 | -1 } = sort?.startsWith('-')
+      ? { [sort.slice(1)]: -1 }
+      : { [sort as string]: 1 }
 
     const aggregationStages = []
 
-    if (sortFilter)
+    if (category) {
+      aggregationStages.push({
+        $match: {
+          category: category,
+        },
+      })
+    }
+
+    if (sort) {
       aggregationStages.push({
         $lookup: {
           from: 'likes',
@@ -30,52 +38,76 @@ export default class MealService implements IMealService {
           as: 'result',
         },
       })
+    }
 
-    aggregationStages.push({
-      $lookup: {
-        from: 'likes',
-        localField: '_id',
-        foreignField: 'meal',
-        as: 'result',
-      },
-    })
-
-    aggregationStages.push({
-      $project: {
-        _id: 1,
-        title: 1,
-        image: 1,
-        price: 1,
-        description: 1,
-        status: 1,
-        category: 1,
-        distributor: 1,
-        ingredients: 1,
-        rating: 1,
-        createdAt: 1,
-        updatedAt: 1,
-        likes: {
-          $size: '$result',
+    ;[
+      {
+        $lookup: {
+          from: 'likes',
+          localField: '_id',
+          foreignField: 'meal',
+          as: 'result',
         },
       },
-    })
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          image: 1,
+          price: 1,
+          description: 1,
+          status: 1,
+          category: 1,
+          distributor: 1,
+          ingredients: 1,
+          rating: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          likes: {
+            $size: '$result',
+          },
+        },
+      },
+    ].forEach((stage) => aggregationStages.push(stage))
 
-    if (sortFilter)
+    if (sort) {
       aggregationStages.push({
         $sort: { ...fltr },
       })
+    }
 
-    if (skip)
+    if (skip) {
       aggregationStages.push({
         $skip: skip,
       })
+    }
 
-    if (limit)
+    if (limit) {
       aggregationStages.push({
         $limit: limit,
       })
+    }
 
-    const meals = (await Meal.aggregate(aggregationStages)) as IMeal[]
+    ;[
+      {
+        $facet: {
+          data: [],
+          count: [{ $count: 'total' }],
+        },
+      },
+      { $unwind: '$count' },
+      { $set: { count: '$count.total' } },
+    ].forEach((stage) => aggregationStages.push(stage))
+
+    const foundMeals = await Meal.aggregate<{
+      count: number
+      data: IMeal[]
+    }>(aggregationStages)
+
+    if (foundMeals.length === 0)
+      throw Err.setStatus('NotFound').setMessage('No meals found!')
+
+    const { data: meals, count: totalDocs } = foundMeals[0]
 
     return { totalDocs, meals }
   }

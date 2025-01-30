@@ -28,9 +28,10 @@ class MealController {
   })
 
   fetchMeals = catchAsync(async (req: Request, res: Response) => {
-    const { sort, skip, limit } = req.query
+    const { category, sort, skip, limit } = req.query
 
     const meals = await this.mealService.fetchMeals(
+      category as string,
       sort as string,
       parseInt(skip as string),
       parseInt(limit as string)
