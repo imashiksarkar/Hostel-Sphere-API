@@ -7,10 +7,12 @@ import {
 import authRouter from './auth.routes'
 import mealRouter from './meal.routes'
 import likeRouter from './like.routes'
+import  subscriptionRouter from './subscription.routes'
 
 const router = Router()
 
 router.get('/', rootController.root)
+router.use('/payment', subscriptionRouter)
 router.use('/users', authRouter)
 router.use('/meals', mealRouter)
 router.use('/likes', likeRouter)

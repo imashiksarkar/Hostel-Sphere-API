@@ -21,6 +21,10 @@ const envParser = z.object({
       const buff = Buffer.from(key, 'base64')
       return buff.toString('utf-8')
     }),
+  STRIPE_API_SECRET_KEY: z
+    .string()
+    .trim()
+    .min(3, 'JWT Secret must be 3 chars or more.'),
 })
 
 const { success, data, error } = envParser.safeParse(process.env)
