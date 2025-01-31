@@ -1,7 +1,8 @@
 import { Err } from 'http-staror'
 import Meal from '../models/Meal.model'
 import IMeal, { CreateMealDto } from '../types/Meal.types'
-import IMealService from '../types/MealService.types'
+import IMealService, { QueryParams } from '../types/MealService.types'
+import { PipelineStage } from 'mongoose'
 
 export default class MealService implements IMealService {
   create = async (meal: CreateMealDto) => {
@@ -9,37 +10,29 @@ export default class MealService implements IMealService {
     return await newMeal.save()
   }
 
-  fetchMeals = async (
-    category?: string,
-    sort?: string,
-    skip: number = 0,
-    limit: number = 10
-  ) => {
-    const fltr: { [key: string]: 1 | -1 } = sort?.startsWith('-')
-      ? { [sort.slice(1)]: -1 }
-      : { [sort as string]: 1 }
+  fetchMeals = async (aggregation: QueryParams) => {
+    const { q, category, price, $sort, $limit, $skip } = aggregation
 
     const aggregationStages = []
 
-    if (category) {
-      aggregationStages.push({
-        $match: {
-          category: category,
+    const match: {
+      $match: Record<string, unknown>
+    } = {
+      $match: {
+        $text: {
+          $search: q,
         },
-      })
+        category,
+        price,
+      },
+      
     }
 
-    if (sort) {
-      aggregationStages.push({
-        $lookup: {
-          from: 'likes',
-          localField: '_id',
-          foreignField: 'meal',
-          as: 'result',
-        },
-      })
-    }
+    if (!q) delete match.$match.$text
+    if (!category) delete match.$match.category
+    if (!price) delete match.$match.price
 
+    aggregationStages.push(match)
     ;[
       {
         $lookup: {
@@ -70,21 +63,21 @@ export default class MealService implements IMealService {
       },
     ].forEach((stage) => aggregationStages.push(stage))
 
-    if (sort) {
+    if ($sort) {
       aggregationStages.push({
-        $sort: { ...fltr },
+        $sort,
       })
     }
 
-    if (skip) {
+    if ($skip) {
       aggregationStages.push({
-        $skip: skip,
+        $skip,
       })
     }
 
-    if (limit) {
+    if ($limit) {
       aggregationStages.push({
-        $limit: limit,
+        $limit,
       })
     }
 
@@ -102,7 +95,7 @@ export default class MealService implements IMealService {
     const foundMeals = await Meal.aggregate<{
       count: number
       data: IMeal[]
-    }>(aggregationStages)
+    }>(aggregationStages as PipelineStage[])
 
     if (foundMeals.length === 0)
       throw Err.setStatus('NotFound').setMessage('No meals found!')

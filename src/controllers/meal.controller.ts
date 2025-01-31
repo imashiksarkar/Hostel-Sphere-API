@@ -4,7 +4,7 @@ import { createMealDto } from '../dtos/meal.dto'
 import catchAsync from '../lib/utils/catchAsync'
 import { ReqWithUser } from '../middlewares/requireAuth'
 import MealService from '../services/meal.service'
-import IMealService from '../types/MealService.types'
+import IMealService, { QueryParams } from '../types/MealService.types'
 
 class MealController {
   constructor(private mealService: IMealService) {}
@@ -28,14 +28,7 @@ class MealController {
   })
 
   fetchMeals = catchAsync(async (req: Request, res: Response) => {
-    const { category, sort, skip, limit } = req.query
-
-    const meals = await this.mealService.fetchMeals(
-      category as string,
-      sort as string,
-      parseInt(skip as string),
-      parseInt(limit as string)
-    )
+    const meals = await this.mealService.fetchMeals(req.query as QueryParams)
     res.status(200).json({
       success: true,
       status: 'OK',
