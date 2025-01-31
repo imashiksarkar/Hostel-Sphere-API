@@ -4,7 +4,8 @@ import catchAsync from '../lib/utils/catchAsync'
 import { ReqWithUser } from '../middlewares/requireAuth'
 import LikeService from '../services/like.service'
 import ILikeService from '../types/LikeService.types'
-import { Response } from 'express'
+import { Response, Request } from 'express'
+import { ObjectId } from 'mongoose'
 
 class LikeController {
   constructor(private likeService: ILikeService) {}
@@ -13,14 +14,17 @@ class LikeController {
     const liker = req.locals.user._id
     const meal = req.body.meal
 
-    const { data, success, error } = createLikeDto.safeParse({ liker, meal })
+    const validatedLike = createLikeDto.safeParse({ liker, meal })
 
-    if (!success)
+    if (!validatedLike.success)
       throw Err.setStatus('BadRequest').setMessage(
-        JSON.stringify(error.formErrors.fieldErrors)
+        JSON.stringify(validatedLike.error.formErrors.fieldErrors)
       )
 
-    await this.likeService.createLike(data.liker, data.meal)
+    await this.likeService.createLike(
+      validatedLike.data.liker,
+      validatedLike.data.meal
+    )
 
     res.status(200).json({
       success: true,
@@ -46,6 +50,20 @@ class LikeController {
       success: true,
       status: 'OK',
       message: 'Like deleted successfully',
+    })
+  })
+
+  fetchNumLikesByMeal = catchAsync(async (req: Request, res: Response) => {
+    const mealId = req.params.mealId
+
+    const likes = await this.likeService.fetchNumLikesByMeal(
+      mealId as unknown as ObjectId
+    )
+
+    res.status(200).json({
+      success: true,
+      status: 'OK',
+      data: likes,
     })
   })
 }

@@ -24,4 +24,15 @@ export default class LikeService implements ILikeService {
       )
     }
   }
+
+  fetchNumLikesByMeal = async (mealId: ObjectId) => {
+    try {
+      return await Like.countDocuments({ meal: mealId })
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error: unknown) {
+      throw Err.setStatus('InternalServerError').setMessage(
+        'Could not fetch num likes'
+      )
+    }
+  }
 }
