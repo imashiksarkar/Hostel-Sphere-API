@@ -21,8 +21,7 @@ export default IMeal
 
 export type ICreateMealRequestDto = z.infer<typeof createMealReqDto>
 
-
-export type MealReqStatus= (typeof mealReqStatuses)[number]
+export type MealReqStatus = (typeof mealReqStatuses)[number]
 
 export interface IMealRequest extends ICreateMealRequestDto {
   _id: string

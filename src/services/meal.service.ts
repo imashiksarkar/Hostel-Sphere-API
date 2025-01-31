@@ -106,4 +106,10 @@ export default class MealService implements IMealService {
 
     return { totalDocs, meals }
   }
+
+  fetchMealById = async (id: string) => {
+    const meal = await Meal.findById(id)
+    if (!meal) throw Err.setStatus('NotFound').setMessage('Meal not found!')
+    return meal
+  }
 }

@@ -5,6 +5,7 @@ import requireAuth from '../middlewares/requireAuth'
 const mealRouter = Router()
 
 mealRouter.get('/', mealController.fetchMeals)
+mealRouter.get('/:mealId', mealController.fetchMealById)
 mealRouter.post('/', requireAuth(), mealController.createMeal)
 
 mealRouter.get('/request', requireAuth(true), mealReqController.fetchMealReqs)

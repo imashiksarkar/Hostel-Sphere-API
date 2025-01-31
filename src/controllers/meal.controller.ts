@@ -35,6 +35,16 @@ class MealController {
       data: meals,
     })
   })
+
+  fetchMealById= catchAsync(async (req: Request, res: Response) => {
+    const meal = await this.mealService.fetchMealById(req.params.mealId)
+    res.
+    status(200).json({
+      success: true,
+      status: 'OK',
+      data: meal,
+    })
+  })
 }
 
 const mealController = new MealController(new MealService())

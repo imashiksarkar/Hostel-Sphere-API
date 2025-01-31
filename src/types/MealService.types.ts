@@ -5,6 +5,7 @@ export default interface IMealService {
   fetchMeals: (
     aggregation: QueryParams
   ) => Promise<{ totalDocs: number; meals: IMeal[] }>
+  fetchMealById: (id: string) => Promise<IMeal>
 }
 
 export interface QueryParams {
