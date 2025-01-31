@@ -12,9 +12,10 @@ export interface QueryParams {
   price?:
     | number
     | {
-        $gte?: unknown
-        $lte?: unknown
+        $gte?: number
+        $lte?: number
       }
+  status?: 'upcoming' | 'available' | 'delivered'
   category?: 'breakfast' | 'lunch' | 'dinner'
   $sort?: Record<string, 1 | -1>
   $skip?: number

@@ -11,7 +11,7 @@ export default class MealService implements IMealService {
   }
 
   fetchMeals = async (aggregation: QueryParams) => {
-    const { q, category, price, $sort, $limit, $skip } = aggregation
+    const { q, category, price,status, $sort, $limit, $skip } = aggregation
 
     const aggregationStages = []
 
@@ -24,6 +24,7 @@ export default class MealService implements IMealService {
         },
         category,
         price,
+        status
       },
       
     }
@@ -31,6 +32,7 @@ export default class MealService implements IMealService {
     if (!q) delete match.$match.$text
     if (!category) delete match.$match.category
     if (!price) delete match.$match.price
+    if (!status) delete match.$match.status
 
     aggregationStages.push(match)
     ;[

@@ -20,6 +20,7 @@ export const querySerialize = <T>(data: T) =>
             .optional()
         ),
       category: z.enum(['breakfast', 'lunch', 'dinner']).optional(),
+      status: z.enum(['upcoming', 'available', 'delivered']).optional(),
       sort: z
         .preprocess(
           (val) =>
