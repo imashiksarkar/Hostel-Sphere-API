@@ -1,24 +1,31 @@
 import { Err } from 'http-staror'
 import Like from '../models/Like.model'
 import ILikeService from '../types/LikeService.types'
-import { ObjectId } from 'mongoose'
+import mongoose, { ObjectId } from 'mongoose'
 
 export default class LikeService implements ILikeService {
-  createLike = async (userId: ObjectId, mealId: ObjectId) => {
+  createLike = async (userId: string, mealId: ObjectId) => {
     try {
-      await Like.create({ liker: userId, meal: mealId })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      await Like.create({ likerFbId: userId, meal: mealId })
     } catch (error: unknown) {
+      if (error instanceof mongoose.mongo.MongoError && error.code === 11000) {
+        throw Err.setStatus('Conflict').setMessage('Meal is already liked!')
+      }
+
       throw Err.setStatus('InternalServerError').setMessage(
         'Could not create like'
       )
     }
   }
-  deleteLike = async (userId: ObjectId, mealId: ObjectId) => {
+  deleteLike = async (userId: string, mealId: ObjectId) => {
     try {
-      await Like.deleteOne({ liker: userId, meal: mealId })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const result = await Like.deleteOne({ likerFbId: userId, meal: mealId })
+
+      if (!result.deletedCount)
+        throw Err.setStatus('NotFound').setMessage('Like not found')
     } catch (error: unknown) {
+      if (error instanceof Err) throw error
+
       throw Err.setStatus('InternalServerError').setMessage(
         'Could not create like'
       )

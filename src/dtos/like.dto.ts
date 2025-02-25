@@ -6,8 +6,5 @@ export const createLikeDto = z.object({
     .string()
     .transform((val) => val as unknown as ObjectId)
     .refine((val) => isValidObjectId(val), { message: 'Invalid id' }),
-  liker: z
-    .string()
-    .transform((val) => val as unknown as ObjectId)
-    .refine((val) => isValidObjectId(val), { message: 'Invalid id' }),
+  liker: z.string().min(4, 'Liker id is invalid!'),
 })

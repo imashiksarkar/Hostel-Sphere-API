@@ -11,7 +11,7 @@ class LikeController {
   constructor(private likeService: ILikeService) {}
 
   createLike = catchAsync(async (req: ReqWithUser, res: Response) => {
-    const liker = req.locals.user._id
+    const liker = req.locals.user.fbId
     const meal = req.body.meal
 
     const validatedLike = createLikeDto.safeParse({ liker, meal })
@@ -34,7 +34,7 @@ class LikeController {
   })
 
   deleteLike = catchAsync(async (req: ReqWithUser, res: Response) => {
-    const liker = req.locals.user._id
+    const liker = req.locals.user.fbId
     const meal = req.body.meal
 
     const { data, success, error } = createLikeDto.safeParse({ liker, meal })

@@ -6,10 +6,9 @@ type LikeModel = Model<ILike>
 
 const LikeSchema = new Schema<LikeDocument>(
   {
-    liker: {
-      type: Schema.Types.ObjectId,
+    likerFbId: {
+      type: String,
       required: true,
-      ref: 'User',
     },
     meal: {
       type: Schema.Types.ObjectId,
