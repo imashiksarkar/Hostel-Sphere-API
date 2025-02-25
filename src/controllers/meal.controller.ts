@@ -42,14 +42,12 @@ class MealController {
       if (!isValidObjectId(req.params.mealId))
         throw Err.setStatus('BadRequest').setMessage('Invalid id')
 
-      const userId = req.locals.user?._id
-      if (userId && !isValidObjectId(userId))
-        throw Err.setStatus('BadRequest').setMessage('Invalid user id')
-
+      const userId = req.locals.user?.fbId
       const meal = await this.mealService.fetchMealById(
         req.params.mealId,
         userId
       )
+
       res.status(200).json({
         success: true,
         status: 'OK',

@@ -163,7 +163,7 @@ export default class MealService implements IMealService {
                 $lookup: {
                   from: 'likes',
                   let: {
-                    localLikerId: new mongoose.Types.ObjectId(userId),
+                    localLikerFbId: userId,
                     localMealId: '$_id',
                   },
                   pipeline: [
@@ -172,7 +172,7 @@ export default class MealService implements IMealService {
                         $expr: {
                           $and: [
                             {
-                              $eq: ['$liker', '$$localLikerId'],
+                              $eq: ['$likerFbId', '$$localLikerFbId'],
                             },
                             {
                               $eq: ['$meal', '$$localMealId'],
