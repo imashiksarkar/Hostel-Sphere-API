@@ -192,6 +192,15 @@ export default class MealService implements IMealService {
                   },
                 },
               },
+              {
+                $lookup: {
+                  from: 'likes',
+                  localField: '_id',
+                  foreignField: 'meal',
+                  as: 'numLikes',
+                },
+              },
+              { $set: { numLikes: { $size: '$numLikes' } } },
             ]
           : []),
       ],
