@@ -54,6 +54,7 @@ export default class MealService implements IMealService {
           'distributor.email',
         ],
       },
+
       {
         $lookup: {
           from: 'likes',
@@ -128,7 +129,7 @@ export default class MealService implements IMealService {
     return { totalDocs, meals }
   }
 
-  fetchMealById = async (id: string) => {
+  fetchMealById = async (id: string, userId?: string) => {
     const meal = await Meal.aggregate<IMeal>(
       [
         {
@@ -155,6 +156,44 @@ export default class MealService implements IMealService {
             'distributor.email',
           ],
         },
+
+        ...(userId
+          ? [
+              {
+                $lookup: {
+                  from: 'likes',
+                  let: {
+                    localLikerId: new mongoose.Types.ObjectId(userId),
+                    localMealId: '$_id',
+                  },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $and: [
+                            {
+                              $eq: ['$liker', '$$localLikerId'],
+                            },
+                            {
+                              $eq: ['$meal', '$$localMealId'],
+                            },
+                          ],
+                        },
+                      },
+                    },
+                  ],
+                  as: 'isLikedByUser',
+                },
+              },
+              {
+                $addFields: {
+                  isLikedByUser: {
+                    $gt: [{ $size: '$isLikedByUser' }, 0],
+                  },
+                },
+              },
+            ]
+          : []),
       ],
       { maxTimeMS: 60000, allowDiskUse: true }
     )

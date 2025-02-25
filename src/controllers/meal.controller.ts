@@ -37,17 +37,26 @@ class MealController {
     })
   })
 
-  fetchMealById = catchAsync(async (req: Request, res: Response) => {
-    if (!isValidObjectId(req.params.mealId))
-      throw Err.setStatus('BadRequest').setMessage('Invalid id')
+  fetchMealById = catchAsync(
+    async (req: ReqWithUser<'passThrough'>, res: Response) => {
+      if (!isValidObjectId(req.params.mealId))
+        throw Err.setStatus('BadRequest').setMessage('Invalid id')
 
-    const meal = await this.mealService.fetchMealById(req.params.mealId)
-    res.status(200).json({
-      success: true,
-      status: 'OK',
-      data: meal,
-    })
-  })
+      const userId = req.locals.user?._id
+      if (userId && !isValidObjectId(userId))
+        throw Err.setStatus('BadRequest').setMessage('Invalid user id')
+
+      const meal = await this.mealService.fetchMealById(
+        req.params.mealId,
+        userId
+      )
+      res.status(200).json({
+        success: true,
+        status: 'OK',
+        data: meal,
+      })
+    }
+  )
 }
 
 const mealController = new MealController(new MealService())
