@@ -2,7 +2,7 @@ import { Err } from 'http-staror'
 import Meal from '../models/Meal.model'
 import IMeal, { CreateMealDto } from '../types/Meal.types'
 import IMealService, { QueryParams } from '../types/MealService.types'
-import { PipelineStage } from 'mongoose'
+import mongoose, { PipelineStage } from 'mongoose'
 
 export default class MealService implements IMealService {
   create = async (meal: CreateMealDto) => {
@@ -11,7 +11,7 @@ export default class MealService implements IMealService {
   }
 
   fetchMeals = async (aggregation: QueryParams) => {
-    const { q, category, price,status, $sort, $limit, $skip } = aggregation
+    const { q, category, price, status, $sort, $limit, $skip } = aggregation
 
     const aggregationStages = []
 
@@ -24,9 +24,8 @@ export default class MealService implements IMealService {
         },
         category,
         price,
-        status
+        status,
       },
-      
     }
 
     if (!q) delete match.$match.$text
@@ -36,6 +35,25 @@ export default class MealService implements IMealService {
 
     aggregationStages.push(match)
     ;[
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'distributor',
+          foreignField: 'fbId',
+          as: 'distributor',
+        },
+      },
+      { $unwind: { path: '$distributor' } },
+      {
+        $unset: [
+          'distributor.createdAt',
+          'distributor.updatedAt',
+          'distributor.image',
+          'distributor.role',
+          'distributor.subscription',
+          'distributor.email',
+        ],
+      },
       {
         $lookup: {
           from: 'likes',
@@ -97,7 +115,10 @@ export default class MealService implements IMealService {
     const foundMeals = await Meal.aggregate<{
       count: number
       data: IMeal[]
-    }>(aggregationStages as PipelineStage[])
+    }>(aggregationStages as PipelineStage[], {
+      maxTimeMS: 60000,
+      allowDiskUse: true,
+    })
 
     if (foundMeals.length === 0)
       throw Err.setStatus('NotFound').setMessage('No meals found!')
@@ -108,8 +129,37 @@ export default class MealService implements IMealService {
   }
 
   fetchMealById = async (id: string) => {
-    const meal = await Meal.findById(id)
+    const meal = await Meal.aggregate<IMeal>(
+      [
+        {
+          $match: {
+            _id: new mongoose.Types.ObjectId(id),
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'distributor',
+            foreignField: 'fbId',
+            as: 'distributor',
+          },
+        },
+        { $unwind: { path: '$distributor' } },
+        {
+          $unset: [
+            'distributor.createdAt',
+            'distributor.updatedAt',
+            'distributor.image',
+            'distributor.role',
+            'distributor.subscription',
+            'distributor.email',
+          ],
+        },
+      ],
+      { maxTimeMS: 60000, allowDiskUse: true }
+    )
+
     if (!meal) throw Err.setStatus('NotFound').setMessage('Meal not found!')
-    return meal
+    return meal[0]
   }
 }

@@ -5,6 +5,7 @@ import catchAsync from '../lib/utils/catchAsync'
 import { ReqWithUser } from '../middlewares/requireAuth'
 import MealService from '../services/meal.service'
 import IMealService, { QueryParams } from '../types/MealService.types'
+import { isValidObjectId } from 'mongoose'
 
 class MealController {
   constructor(private mealService: IMealService) {}
@@ -36,10 +37,12 @@ class MealController {
     })
   })
 
-  fetchMealById= catchAsync(async (req: Request, res: Response) => {
+  fetchMealById = catchAsync(async (req: Request, res: Response) => {
+    if (!isValidObjectId(req.params.mealId))
+      throw Err.setStatus('BadRequest').setMessage('Invalid id')
+
     const meal = await this.mealService.fetchMealById(req.params.mealId)
-    res.
-    status(200).json({
+    res.status(200).json({
       success: true,
       status: 'OK',
       data: meal,
