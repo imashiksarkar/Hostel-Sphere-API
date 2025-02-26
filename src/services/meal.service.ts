@@ -201,6 +201,20 @@ export default class MealService implements IMealService {
                 },
               },
               { $set: { numLikes: { $size: '$numLikes' } } },
+              {
+                $lookup: {
+                  from: 'subscriptions',
+                  localField: 'distributor.fbId',
+                  foreignField: 'userId',
+                  as: 'subscription',
+                }
+              },
+              {
+                $unwind: {
+                  path: '$subscription',
+                  preserveNullAndEmptyArrays: true
+                }
+              }
             ]
           : []),
       ],
