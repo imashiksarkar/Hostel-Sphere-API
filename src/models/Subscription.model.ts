@@ -6,14 +6,13 @@ import {
 } from '../types/Subscription.types'
 
 type SubscriptionDocument = Document & ISubscription
-type SubscriptionModel = Model<ISubscription>
+type SubscriptionModel = Model<SubscriptionDocument>
 
 const SubscriptionSchema = new Schema<SubscriptionDocument>(
   {
     userId: {
-      type: Schema.Types.ObjectId as unknown as StringConstructor,
+      type: String,
       required: true,
-      ref: 'User',
     },
     plan: {
       type: String,
@@ -25,8 +24,34 @@ const SubscriptionSchema = new Schema<SubscriptionDocument>(
       required: true,
     },
     expiresAt: {
-      type: Date,
-      default: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+      type: String,
+      default: new Date(
+        new Date().setMonth(new Date().getMonth() + 1)
+      ).toDateString(),
+    },
+    apiVersion: {
+      type: String,
+      required: true,
+    },
+    paymentId: {
+      type: String,
+      required: true,
+    },
+    currency: {
+      type: String,
+      required: true,
+    },
+    paymentMethod: {
+      type: String,
+      required: true,
+    },
+    type: {
+      type: String,
+      required: true,
+    },
+    created: {
+      type: Number,
+      required: true,
     },
   },
   {

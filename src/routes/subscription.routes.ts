@@ -12,4 +12,6 @@ paymentRouter.post(
   subscriptionController.createPaymentIntent
 )
 
+paymentRouter.post('/webhook', subscriptionController.webhook)
+
 export default paymentRouter

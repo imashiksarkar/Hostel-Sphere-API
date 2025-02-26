@@ -1,11 +1,14 @@
-import { Response } from 'express'
+import { Response, Request } from 'express'
 import { Err } from 'http-staror'
 import mongoose from 'mongoose'
 import { createSubscriptionDto } from '../dtos/subscription.dto'
 import catchAsync from '../lib/utils/catchAsync'
 import { ReqWithUser } from '../middlewares/requireAuth'
 import SubscriptionService from '../services/subscription.service'
-import ISubscriptionService, { IPlanEnum } from '../types/Subscription.types'
+import ISubscriptionService, {
+  IPaymentSuccess,
+  IPlanEnum,
+} from '../types/Subscription.types'
 
 class SubscriptionController {
   constructor(private authService: ISubscriptionService) {}
@@ -42,6 +45,37 @@ class SubscriptionController {
       if (err instanceof Err) throw err
       throw Err.setStatus('InternalServerError').setMessage(
         (err as Error).message
+      )
+    }
+  })
+
+  webhook = catchAsync(async (req: Request, res: Response) => {
+    const { id, api_version, created, data, type } = req.body as IPaymentSuccess
+
+    try {
+      if (type === 'payment_intent.succeeded')
+        await this.authService.savePaymentHistory({
+          apiVersion: api_version,
+          paymentId: id,
+          paymentMethod: data?.object?.payment_method,
+          price: data?.object?.amount_received,
+          expiresAt: new Date(
+            new Date().setMonth(new Date().getMonth() + 1)
+          ).toISOString(),
+          created,
+          currency: data?.object?.currency,
+          type,
+          plan: data?.object?.metadata?.plan,
+          userId: data?.object?.metadata?.userId,
+        })
+
+      return res.sendStatus(200)
+    } catch (error) {
+      console.log(error)
+
+      if (error instanceof Err) throw error
+      throw Err.setStatus('InternalServerError').setMessage(
+        (error as Error).message
       )
     }
   })
