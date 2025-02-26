@@ -1,19 +1,18 @@
 import { Response } from 'express'
+import { Err } from 'http-staror'
+import mongoose from 'mongoose'
+import { createSubscriptionDto } from '../dtos/subscription.dto'
+import catchAsync from '../lib/utils/catchAsync'
 import { ReqWithUser } from '../middlewares/requireAuth'
 import SubscriptionService from '../services/subscription.service'
 import ISubscriptionService, { IPlanEnum } from '../types/Subscription.types'
-import catchAsync from '../lib/utils/catchAsync'
-import { createSubscriptionDto } from '../dtos/subscription.dto'
-import { Err } from 'http-staror'
-import isValidObjectId from '../lib/utils/objectIdType'
-import mongoose from 'mongoose'
 
 class SubscriptionController {
   constructor(private authService: ISubscriptionService) {}
 
   createPaymentIntent = catchAsync(async (req: ReqWithUser, res: Response) => {
     const body = createSubscriptionDto(req.body)
-    const userId = isValidObjectId(req.locals.user._id)
+    const userId = req.locals.user.fbId
 
     try {
       const Plan = mongoose.connection.db?.collection('plans')
