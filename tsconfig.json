@@ -19,5 +19,6 @@
     /* Completeness */
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["./src/__raff__/*"]
 }

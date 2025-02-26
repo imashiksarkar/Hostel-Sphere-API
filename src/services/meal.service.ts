@@ -11,122 +11,134 @@ export default class MealService implements IMealService {
   }
 
   fetchMeals = async (aggregation: QueryParams) => {
-    const { q, category, price, status, $sort, $limit, $skip } = aggregation
+    try {
+      const { q, category, price, status, $sort, $limit, $skip } = aggregation
 
-    const aggregationStages = []
+      const aggregationStages = []
 
-    const match: {
-      $match: Record<string, unknown>
-    } = {
-      $match: {
-        $text: {
-          $search: q,
+      const match: {
+        $match: Record<string, unknown>
+      } = {
+        $match: {
+          $text: {
+            $search: q,
+          },
+          category,
+          price,
+          status,
         },
-        category,
-        price,
-        status,
-      },
-    }
+      }
 
-    if (!q) delete match.$match.$text
-    if (!category) delete match.$match.category
-    if (!price) delete match.$match.price
-    if (!status) delete match.$match.status
+      if (!q) delete match.$match.$text
+      if (!category) delete match.$match.category
+      if (!price) delete match.$match.price
+      if (!status) delete match.$match.status
 
-    aggregationStages.push(match)
-    ;[
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'distributor',
-          foreignField: 'fbId',
-          as: 'distributor',
-        },
-      },
-      { $unwind: { path: '$distributor' } },
-      {
-        $unset: [
-          'distributor.createdAt',
-          'distributor.updatedAt',
-          'distributor.image',
-          'distributor.role',
-          'distributor.subscription',
-          'distributor.email',
-        ],
-      },
-
-      {
-        $lookup: {
-          from: 'likes',
-          localField: '_id',
-          foreignField: 'meal',
-          as: 'result',
-        },
-      },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          image: 1,
-          price: 1,
-          description: 1,
-          status: 1,
-          category: 1,
-          distributor: 1,
-          ingredients: 1,
-          rating: 1,
-          createdAt: 1,
-          updatedAt: 1,
-          likes: {
-            $size: '$result',
+      aggregationStages.push(match)
+      ;[
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'distributor',
+            foreignField: 'fbId',
+            as: 'distributor',
           },
         },
-      },
-    ].forEach((stage) => aggregationStages.push(stage))
-
-    if ($sort) {
-      aggregationStages.push({
-        $sort,
-      })
-    }
-
-    if ($skip) {
-      aggregationStages.push({
-        $skip,
-      })
-    }
-
-    if ($limit) {
-      aggregationStages.push({
-        $limit,
-      })
-    }
-
-    ;[
-      {
-        $facet: {
-          data: [],
-          count: [{ $count: 'total' }],
+        { $unwind: { path: '$distributor', preserveNullAndEmptyArrays: true } },
+        {
+          $unset: [
+            'distributor.createdAt',
+            'distributor.updatedAt',
+            'distributor.image',
+            'distributor.role',
+            'distributor.subscription',
+            'distributor.email',
+          ],
         },
-      },
-      { $unwind: '$count' },
-      { $set: { count: '$count.total' } },
-    ].forEach((stage) => aggregationStages.push(stage))
 
-    const foundMeals = await Meal.aggregate<{
-      count: number
-      data: IMeal[]
-    }>(aggregationStages as PipelineStage[], {
-      maxTimeMS: 60000,
-      allowDiskUse: true,
-    })
+        {
+          $lookup: {
+            from: 'likes',
+            localField: '_id',
+            foreignField: 'meal',
+            as: 'result',
+          },
+        },
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            image: 1,
+            price: 1,
+            description: 1,
+            status: 1,
+            category: 1,
+            distributor: 1,
+            ingredients: 1,
+            rating: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            likes: {
+              $size: '$result',
+            },
+          },
+        },
+      ].forEach((stage) => aggregationStages.push(stage))
 
-    if (foundMeals.length === 0)
-      throw Err.setStatus('NotFound').setMessage('No meals found!')
+      if ($sort) {
+        aggregationStages.push({
+          $sort,
+        })
+      }
 
-    const { data: meals, count: totalDocs } = foundMeals[0]
+      if ($skip) {
+        aggregationStages.push({
+          $skip,
+        })
+      }
 
-    return { totalDocs, meals }
+      if ($limit) {
+        aggregationStages.push({
+          $limit,
+        })
+      }
+
+      ;[
+        {
+          $facet: {
+            data: [],
+            count: [{ $count: 'total' }],
+          },
+        },
+        {
+          $unwind: {
+            path: '$count',
+            preserveNullAndEmptyArrays: true,
+          },
+        },
+        { $set: { count: '$count.total' } },
+      ].forEach((stage) => aggregationStages.push(stage))
+
+      const foundMeals = await Meal.aggregate<{
+        count: number
+        data: IMeal[]
+      }>(aggregationStages as PipelineStage[], {
+        maxTimeMS: 60000,
+        allowDiskUse: true,
+      })
+
+      if (foundMeals.length === 0)
+        throw Err.setStatus('NotFound').setMessage('No meals found!')
+
+      const { data: meals, count: totalDocs } = foundMeals[0]
+
+      return { totalDocs, meals }
+    } catch (error) {
+      if (error instanceof Err) throw error
+      throw Err.setStatus('InternalServerError').setMessage(
+        (error as Error).message
+      )
+    }
   }
 
   fetchMealById = async (id: string, userId?: string) => {
@@ -145,7 +157,7 @@ export default class MealService implements IMealService {
             as: 'distributor',
           },
         },
-        { $unwind: { path: '$distributor' } },
+        { $unwind: { path: '$distributor', preserveNullAndEmptyArrays: true } },
         {
           $unset: [
             'distributor.createdAt',
@@ -207,14 +219,14 @@ export default class MealService implements IMealService {
                   localField: 'distributor.fbId',
                   foreignField: 'userId',
                   as: 'subscription',
-                }
+                },
               },
               {
                 $unwind: {
                   path: '$subscription',
-                  preserveNullAndEmptyArrays: true
-                }
-              }
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
             ]
           : []),
       ],
