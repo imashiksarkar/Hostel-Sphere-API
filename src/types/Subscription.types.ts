@@ -37,6 +37,8 @@ export default interface ISubscriptionService {
   ) => Promise<Stripe.Response<Stripe.PaymentIntent>>
 
   savePaymentHistory: (input: ISubscriptionInput) => Promise<ISubscription>
+
+  getPaymentHistory: (userId: string) => Promise<ISubscription[]>
 }
 
 export interface IPaymentSuccess {

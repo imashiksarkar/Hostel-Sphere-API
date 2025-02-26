@@ -13,6 +13,16 @@ import ISubscriptionService, {
 class SubscriptionController {
   constructor(private authService: ISubscriptionService) {}
 
+  getPaymentHistory = catchAsync(async (req: ReqWithUser, res: Response) => {
+    const userId = req.locals.user.fbId
+    const history = await this.authService.getPaymentHistory(userId)
+    return res.status(200).json({
+      success: true,
+      status: 'OK',
+      data: history,
+    })
+  })
+
   createPaymentIntent = catchAsync(async (req: ReqWithUser, res: Response) => {
     const body = createSubscriptionDto(req.body)
     const userId = req.locals.user.fbId

@@ -74,4 +74,16 @@ export default class SubscriptionService implements ISubscriptionService {
       )
     }
   }
+
+  getPaymentHistory = async (userId: string) => {
+    try {
+      const history = await Subscription.find({ userId }).lean()
+
+      return history
+    } catch (error) {
+      throw Err.setStatus('InternalServerError').setMessage(
+        (error as Error).message
+      )
+    }
+  }
 }

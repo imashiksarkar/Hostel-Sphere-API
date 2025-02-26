@@ -5,6 +5,13 @@ import { subscriptionController } from '../controllers'
 
 const paymentRouter = Router()
 
+paymentRouter.get(
+  '/',
+  requireAuth(),
+  requireRole('user'),
+  subscriptionController.getPaymentHistory
+)
+
 paymentRouter.post(
   '/',
   requireAuth(),
