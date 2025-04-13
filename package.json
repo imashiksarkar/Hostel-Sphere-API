@@ -1,17 +1,22 @@
 {
   "name": "cine-verse",
   "version": "1.0.0",
-  "description": "",
+  "description": "cineverse api",
   "main": "./dist/server.js",
   "scripts": {
     "dev": "clear && nodemon --transpile-only ./src/server.ts",
     "start": "node ./dist/server.js",
-    "build": "clear && eslint && rm -rf ./dist && tsc",
+    "build": "clear && eslint && rm -rf ./dist && tsc -p tsconfig.build.json",
     "lint": "clear && eslint",
-    "lint:fix": "clear && eslint --fix"
+    "lint:fix": "clear && eslint --fix",
+    "test": "vitest --ui",
+    "test:once": "vitest --run"
+  },
+  "_moduleAliases": {
+    "@": "dist"
   },
   "keywords": [],
-  "author": "",
+  "author": "Ashik Sarkar <contact@ashiksarkar.xyz>",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -21,12 +26,17 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.10.2",
     "@types/node-cron": "^3.0.11",
+    "@types/supertest": "^6.0.3",
+    "@vitest/ui": "3.1.1",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
+    "module-alias": "^2.2.3",
     "nodemon": "^3.1.9",
+    "supertest": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.1"
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^3.1.1"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",

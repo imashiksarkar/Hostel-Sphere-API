@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     /* Language and Environment */
     "target": "ES2022",
 
     /* Modules */
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "./src",
+    // "rootDir": "./src",
     "outDir": "./dist",
     "noEmitOnError": true,
     "removeComments": true,
@@ -18,7 +19,16 @@
 
     /* Completeness */
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    /* Import Alias */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    /* Vitest globals for TypeScript */
+    "types": ["vitest/globals"]
   },
-  "exclude": ["./src/__raff__/*"]
+  "include": ["src", "vite.config.ts", "test"],
+  "exclude": ["dist", "node_modules", "src/types"]
 }

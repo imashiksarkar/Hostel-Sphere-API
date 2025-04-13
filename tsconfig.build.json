@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src"],
+  "exclude": [
+    "src/**/__raff__",
+    "src/**/__test__",
+    "src/**/__tests__",
+    "src/**/__mocks__",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "vite.config.ts",
+    "node_modules",
+    "dist",
+    "test",
+    "src/types"
+  ]
+}
